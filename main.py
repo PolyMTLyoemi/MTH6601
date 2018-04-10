@@ -7,6 +7,32 @@ import numpy as np
 from bandits import BernoulliBandit
 from solvers import Solver, EpsilonGreedy, UCB1, BayesianUCB, ThompsonSampling
 
+def plot_regrets(solvers, solver_names, figname):
+    """
+    Plot the regrets by multi-armed bandit solvers.
+
+    Args:
+        solvers (list<Solver>): All of them should have been fitted.
+        solver_names (list<str)
+        figname (str)
+    """
+    assert len(solvers) == len(solver_names)
+    assert all(map(lambda s: isinstance(s, Solver), solvers))
+    assert all(map(lambda s: len(s.regrets) > 0, solvers))
+
+    b = solvers[0].bandit
+
+    fig = plt.figure(figsize=(8,6))
+
+    # Regrets in time.
+    for i, s in enumerate(solvers):
+        plt.plot(range(len(s.regrets)), s.regrets, label=solver_names[i])
+
+    plt.xlabel('Time step')
+    plt.ylabel('Cumulative regret')
+    plt.legend(loc='upper left', shadow=True, ncol=1)
+    plt.grid('k', ls='--', alpha=0.3)
+    plt.savefig(figname)
 
 def plot_results(solvers, solver_names, figname):
     """
@@ -69,9 +95,9 @@ def experiment(K, N):
     """
 
     b = BernoulliBandit(K)
-    print "Randomly generated Bernoulli bandit has reward probabilities:\n", b.probas
-    print "The best machine has index: {} and proba: {}".format(
-        max(range(K), key=lambda i: b.probas[i]), max(b.probas))
+    print("Randomly generated Bernoulli bandit has reward probabilities:\n", b.probas)
+    print("The best machine has index: {} and proba: {}".format(
+        max(range(K), key=lambda i: b.probas[i]), max(b.probas)))
 
     test_solvers = [
         # EpsilonGreedy(b, 0),
@@ -93,7 +119,8 @@ def experiment(K, N):
     for s in test_solvers:
         s.run(N)
 
-    plot_results(test_solvers, names, "results_K{}_N{}.png".format(K, N))
+    # plot_results(test_solvers, names, "results_K{}_N{}.png".format(K, N))
+    plot_regrets(test_solvers, names, "results_K{}_N{}.png".format(K, N))
 
 
 if __name__ == '__main__':
